@@ -55,7 +55,7 @@ def save_recording():
 def transcribe_audio():
     url = "https://api.openai.com/v1/audio/transcriptions"
     headers = {
-        "Authorization": "Bearer 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"
+        "Authorization": ""
     }
     # Replace "your-model-name" with the actual model name, e.g., "whisper-large"
     data = {
