@@ -1,4 +1,3 @@
-import sys
 import logging
 import threading
 import pyaudio
@@ -10,11 +9,14 @@ from pynput.keyboard import Key, Controller
 import time
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import multiprocessing
+import warnings
+import urllib3
 import os
 from dotenv import load_dotenv
-from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QObject, pyqtSignal, QTimer
+
+# Suppress LibreSSL warning
+warnings.filterwarnings("ignore", category=urllib3.exceptions.NotOpenSSLWarning)
 
 # Load environment variables
 load_dotenv()
@@ -96,7 +98,13 @@ def save_recording():
     finally:
         frames = []
 
-def transcribe_audio():
+def create_ssl_context():
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+    return context
+
+def transcribe_audio_process(queue):
     try:
         logging.info("Starting transcription")
         url = "https://api.openai.com/v1/audio/transcriptions"
@@ -126,81 +134,79 @@ def transcribe_audio():
                     response.raise_for_status()
                     transcription = response.json()['text']
                     logging.info(f"Transcription: {transcription}")
-                    return transcription
+                    queue.put(transcription)
+                    return
                 except requests.exceptions.RequestException as e:
                     logging.error(f"Request error in transcription (attempt {attempt + 1}): {e}")
                     if attempt < 2:
                         time.sleep(2 ** attempt)  # Exponential backoff
                     else:
-                        return "Transcription failed after multiple attempts."
+                        queue.put("Transcription failed after multiple attempts.")
+        
     except Exception as e:
         logging.error(f"Unexpected error in transcription: {e}")
-        return "Transcription failed due to unexpected error."
+        queue.put("Transcription failed due to unexpected error.")
 
-class TrayIcon(QSystemTrayIcon):
-    def __init__(self, app):
-        super().__init__(app)
-        self.setIcon(QIcon("path_to_your_icon.png"))  # Replace with path to your icon
-        self.setVisible(True)
-
-        menu = QMenu()
-        exit_action = menu.addAction("Exit")
-        exit_action.triggered.connect(app.quit)
-        self.setContextMenu(menu)
-
-    def update_icon(self, is_recording):
-        if is_recording:
-            self.setIcon(QIcon("path_to_recording_icon.png"))  # Replace with path to your recording icon
-        else:
-            self.setIcon(QIcon("path_to_normal_icon.png"))  # Replace with path to your normal icon
-
-class RecordingManager(QObject):
-    transcription_ready = pyqtSignal(str)
-
-    def __init__(self, tray_icon):
-        super().__init__()
-        self.tray_icon = tray_icon
-        self.transcription_ready.connect(self.handle_transcription)
-
-    def toggle_recording(self):
-        global recording
-        if not recording:
-            threading.Thread(target=start_recording, daemon=True).start()
-            self.tray_icon.update_icon(True)
-        else:
-            stop_recording()
-            self.tray_icon.update_icon(False)
-            save_recording()
-            transcription = transcribe_audio()
-            self.transcription_ready.emit(transcription)
-
-    def handle_transcription(self, transcription):
-        paste_transcription(transcription)
-
-def paste_transcription(text):
-    keyboard = Controller()
+def transcribe_audio():
+    queue = multiprocessing.Queue()
+    process = multiprocessing.Process(target=transcribe_audio_process, args=(queue,))
+    process.start()
+    process.join(timeout=30)  # Wait for up to 30 seconds
     
-    # Type out the transcription
-    keyboard.type(text)
+    if process.is_alive():
+        process.terminate()
+        process.join()
+        return "Transcription timed out"
     
-    logging.info("Transcription typed out")
+    if not queue.empty():
+        return queue.get()
+    else:
+        return "Transcription failed"
+
+def copy_and_paste_transcription(text):
+    try:
+        logging.info("Copying transcription to clipboard")
+        pyperclip.copy(text)
+        logging.info("Transcription copied to clipboard")
+
+        # Simulate Cmd+V to paste
+        keyboard_controller = Controller()
+        keyboard_controller.press(Key.cmd)
+        keyboard_controller.press('v')
+        keyboard_controller.release('v')
+        keyboard_controller.release(Key.cmd)
+        logging.info("Transcription pasted")
+    except Exception as e:
+        logging.error(f"Error copying or pasting transcription: {e}")
 
 def on_activate():
-    recording_manager.toggle_recording()
+    global recording
+    if not recording:
+        threading.Thread(target=start_recording, daemon=True).start()
+    else:
+        stop_recording()
+        save_recording()
+        transcription = transcribe_audio()
+        copy_and_paste_transcription(transcription)
+
+hotkey = keyboard.HotKey(
+    keyboard.HotKey.parse('<ctrl>+<cmd>+h'),
+    on_activate)
+
+def for_canonical(f):
+    return lambda k: f(listener.canonical(k))
+
+listener = keyboard.Listener(
+    on_press=for_canonical(hotkey.press),
+    on_release=for_canonical(hotkey.release))
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    
-    tray_icon = TrayIcon(app)
-    recording_manager = RecordingManager(tray_icon)
-
-    hotkey = keyboard.HotKey(
-        keyboard.HotKey.parse('<ctrl>+<cmd>+h'),
-        on_activate)
-
-    with keyboard.Listener(
-        on_press=lambda k: hotkey.press(k),
-        on_release=lambda k: hotkey.release(k)
-    ) as listener:
+    try:
+        listener.start()
         logging.info("Voice recognition app is running. Press Ctrl+Cmd+H to start/stop recording.")
-        sys.exit(app.exec_())
+        listener.join()
+    except Exception as e:
+        logging.error(f"Error in main thread: {e}")
+    finally:
+        if recording:
+            stop_recording()
