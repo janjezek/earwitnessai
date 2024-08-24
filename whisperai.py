@@ -163,7 +163,7 @@ def on_activate():
         copy_and_paste_transcription(transcription)
 
 hotkey = keyboard.HotKey(
-    keyboard.HotKey.parse('<ctrl>+<cmd>+h'),
+    keyboard.HotKey.parse('<ctrl>+<space>'),
     on_activate)
 
 def for_canonical(f):
@@ -176,7 +176,7 @@ listener = keyboard.Listener(
 if __name__ == "__main__":
     try:
         listener.start()
-        logging.info("Voice recognition app is running. Press Ctrl+Cmd+H to start/stop recording.")
+        logging.info("Voice recognition app is running. Press Ctrl+Space to start/stop recording.")
         listener.join()
     except Exception as e:
         logging.error(f"Error in main thread: {e}")
