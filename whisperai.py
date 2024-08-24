@@ -6,12 +6,11 @@ import requests
 import pyperclip
 from pynput import keyboard
 from pynput.keyboard import Key, Controller
-import time
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from urllib3.util.retry import Retry
 import os
 from dotenv import load_dotenv
-import ssl  # Add this import
+import time
 
 # Load environment variables
 load_dotenv()
@@ -93,12 +92,6 @@ def save_recording():
     finally:
         frames = []
 
-def create_ssl_context():
-    context = ssl.create_default_context()
-    context.check_hostname = False
-    context.verify_mode = ssl.CERT_NONE
-    return context
-
 def transcribe_audio_process(queue):
     try:
         logging.info("Starting transcription")
@@ -126,6 +119,8 @@ def transcribe_audio_process(queue):
             logging.info(f"API Response status code: {response.status_code}")
             response.raise_for_status()
             transcription = response.json()['text']
+            # Capitalize only the first word
+            transcription = ' '.join([word.capitalize() if i == 0 else word for i, word in enumerate(transcription.split())])
             logging.info(f"Transcription: {transcription}")
             return transcription
         
@@ -149,8 +144,15 @@ def copy_and_paste_transcription(text):
         keyboard_controller.release('v')
         keyboard_controller.release(Key.cmd)
         logging.info("Transcription pasted")
+
+        # Add a short delay before clearing the clipboard
+        time.sleep(0.5)
+
+        # Clear the clipboard
+        pyperclip.copy('')
+        logging.info("Clipboard cleared")
     except Exception as e:
-        logging.error(f"Error copying or pasting transcription: {e}")
+        logging.error(f"Error copying, pasting, or clearing transcription: {e}")
 
 def on_activate():
     global recording

@@ -1,46 +1,5 @@
-altgraph @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/altgraph-0.17.2-py2.py3-none-any.whl
-certifi==2024.2.2
-cffi==1.17.0
-charset-normalizer==3.3.2
-contourpy==1.2.1
-cryptography==43.0.0
-cycler==0.12.1
-fonttools==4.53.1
-future @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/future-0.18.2-py3-none-any.whl
-idna==3.6
-importlib_resources==6.4.3
-kiwisolver==1.4.5
-macholib @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/macholib-1.15.2-py2.py3-none-any.whl
-matplotlib==3.9.2
-MouseInfo==0.1.3
-numpy==2.0.1
-packaging==24.1
-pillow==10.2.0
-PyAudio==0.2.14
-PyAutoGUI==0.9.54
-pycparser==2.22
-PyGetWindow==0.0.9
-PyMsgBox==1.0.9
-pynput==1.7.7
-pyobjc-core==10.1
-pyobjc-framework-ApplicationServices==10.1
-pyobjc-framework-Cocoa==10.1
-pyobjc-framework-CoreText==10.1
-pyobjc-framework-Quartz==10.1
-pyOpenSSL==24.2.1
-pyparsing==3.1.2
-pyperclip==1.9.0
-PyQt5==5.15.11
-PyQt5-Qt5==5.15.14
-PyQt5_sip==12.15.0
-PyRect==0.2.0
-PyScreeze==0.1.30
-python-dateutil==2.9.0.post0
-python-dotenv==1.0.1
-pytweening==1.2.0
-requests==2.32.3
-rubicon-objc==0.4.7
-six @ file:///AppleInternal/Library/BuildRoots/860631e9-c1c5-11ee-98ee-b6ef2fd8d87b/Library/Caches/com.apple.xbs/Sources/python3/six-1.15.0-py2.py3-none-any.whl
-sounddevice==0.5.0
-urllib3==2.2.2
-zipp==3.20.0
+pyaudio
+requests
+pyperclip
+pynput
+python-dotenv
