@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="ear-witness-ai-logo.png" alt="EarWitnessAI Logo">
+</p>
+
 # EarWitnessAI Voice Recognition App
 
 This application allows you to record audio, transcribe it using OpenAI's Whisper API, and automatically paste the transcription into the active window. It's designed to be a quick and efficient tool for voice-to-text input across whole operating system.
