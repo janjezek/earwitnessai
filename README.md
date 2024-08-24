@@ -28,7 +28,7 @@ This application allows you to record audio, transcribe it using OpenAI's Whispe
 1. Clone the repository:
 
    ```
-   git clone https://github.com/yourusername/earwitnessai.git
+   git clone https://github.com/janjezek/earwitnessai.git
    cd earwitnessai
    ```
 
