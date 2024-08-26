@@ -1,5 +1,8 @@
 pyaudio
-requests
 pyperclip
 pynput
 python-dotenv
+openai-whisper
+
+# Note: This project also requires ffmpeg to be installed on your system.
+# FFmpeg is not a Python package and should be installed separately.
