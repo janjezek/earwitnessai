@@ -88,8 +88,8 @@ def save_recording():
 def transcribe_audio():
     try:
         logging.info("Starting transcription with local Whisper model")
-        model = whisper.load_model("base")
-        result = model.transcribe(WAVE_OUTPUT_FILENAME)
+        model = whisper.load_model("base", device="cpu")
+        result = model.transcribe(WAVE_OUTPUT_FILENAME, fp16=False)
         transcription = result["text"]
         # Capitalize only the first word
         transcription = ' '.join([word.capitalize() if i == 0 else word for i, word in enumerate(transcription.split())])
