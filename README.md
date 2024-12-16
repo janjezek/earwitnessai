@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="ear-witness-ai-logo.png" alt="EarWitnessAI Logo">
-</p>
+![EarWitnessAI Logo](ear-witness-ai-logo.png "EarWitnessAI Logo")
 
 # EarWitnessAI Voice Recognition App
 
